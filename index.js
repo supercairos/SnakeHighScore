@@ -1,22 +1,21 @@
 var pg = require('pg')
 var express = require('express')
+var http = require('http');
+var fs = require('fs');
+var bodyParser = require('body-parser')
+
 var cool = require('cool-ascii-faces')
 
 var app = express()
 app.set('port', (process.env.PORT || 5000))
 
-app.get('/setup_database', function (request, response) {
-	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('CREATE TABLE IF NOT EXISTS highscores (id serial PRIMARY KEY NOT NULL, uuid VARCHAR(255) UNIQUE NOT NULL, name VARCHAR (50) UNIQUE NOT NULL, score integer NOT NULL, timestamp TIMESTAMP)', function(err, result) {
-			done();
-			if (err){ 
-				console.error(err); response.send("Error " + err);
-			} else { 
-				response.send(result);
-			}
-		});
-	});
-})
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ 
+	extended: true 
+}));
+
+// parse application/json
+app.use(bodyParser.json());
 
 app.get('/highscore', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
@@ -26,6 +25,19 @@ app.get('/highscore', function (request, response) {
 				console.error(err); response.send("Error " + err);
 			} else { 
 				response.send(result.rows);
+			}
+		});
+	});
+})
+
+app.post('/highscore', function (request, response) {
+	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+		client.query('INSERT INTO highscores (uuid, name, score, timestamp) VALUES($1, $2, $3, $4) RETURNING id;', [request.body.uuid, request.body.name, request.body.score, new Date()]function(err, result) {
+			done();
+			if (err){ 
+				console.error(err); response.send("Error " + err);
+			} else { 
+				response.send(result);
 			}
 		});
 	});

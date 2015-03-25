@@ -1,7 +1,8 @@
 {
 	"dependencies": {
-		"pg": "*",
-		"express": "*",
-		"cool-ascii-faces": "*"
+		"pg": "latest",
+		"express": "latest",
+		"cool-ascii-faces": "latest",
+		"body-parser": "latest"
 	}
 }
