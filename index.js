@@ -32,7 +32,7 @@ app.get('/highscore', function (request, response) {
 
 app.post('/highscore', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('INSERT INTO highscores (uuid, name, score, timestamp) VALUES($1, $2, $3, $4) RETURNING id;', [request.body.uuid, request.body.name, request.body.score, new Date()]function(err, result) {
+		client.query('INSERT INTO highscores (uuid, name, score, timestamp) VALUES($1, $2, $3, $4) RETURNING id;', [request.body.uuid, request.body.name, request.body.score, new Date()], function(err, result) {
 			done();
 			if (err){ 
 				console.error(err); response.send("Error " + err);
