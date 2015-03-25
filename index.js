@@ -20,7 +20,7 @@ app.get('/setup_database', function (request, response) {
 
 app.get('/highscore', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('SELECT * FROM highscore ORDER BY score DESC LIMIT 5;', function(err, result) {
+		client.query('SELECT * FROM highscores ORDER BY score DESC LIMIT 5;', function(err, result) {
 			done();
 			if (err){ 
 				console.error(err); response.send("Error " + err);
