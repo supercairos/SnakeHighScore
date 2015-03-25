@@ -17,6 +17,32 @@ app.use(bodyParser.urlencoded({
 // parse application/json
 app.use(bodyParser.json());
 
+app.get('/setup_database', function (request, response) {
+	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+		client.query('CREATE TABLE IF NOT EXISTS highscores (id serial PRIMARY KEY NOT NULL, uuid VARCHAR(255) NOT NULL, name VARCHAR (50) UNIQUE NOT NULL, score integer NOT NULL, timestamp TIMESTAMP)', function(err, result) {
+			done();
+			if (err){ 
+				console.error(err); response.send("Error " + err);
+			} else { 
+				response.send(result);
+			}
+		});
+	});
+})
+
+app.get('/drop_table', function (request, response) {
+	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+		client.query('DROP TABLE highscores;', function(err, result) {
+			done();
+			if (err){ 
+				console.error(err); response.send("Error " + err);
+			} else { 
+				response.send(result);
+			}
+		});
+	});
+})
+
 app.get('/truncate', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
 		client.query('TRUNCATE highscores;', function(err, result) {
@@ -50,7 +76,7 @@ app.post('/highscore', function (request, response) {
 			if (err){ 
 				console.error(err); response.send("Error " + err);
 			} else {
-				response.send(result.rows[0]);
+				response.send(result.rows[0].id);
 			}
 		});
 	});
