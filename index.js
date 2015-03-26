@@ -86,7 +86,7 @@ app.get('/uuid_highscore', function (request, response) {
 
 app.get('/highscore', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('SELECT h.id, h.name, merge.score, h.timestamp, h.uuid FROM highscores h, (SELECT uuid, max(score) AS score FROM highscores GROUP BY uuid) merge WHERE merge.uuid = h.uuid ORDER BY score DESC LIMIT 5;', function(err, result) {
+		client.query('SELECT h.id, h.name, MAX(score) AS score, h.timestamp, h.uuid FROM highscores AS h GROUP BY h.uuid ORDER BY h.score DESC LIMIT 5;', function(err, result) {
 			done();
 			if (err){ 
 				console.error(err); 
