@@ -70,9 +70,23 @@ app.get('/all_highscore', function (request, response) {
 	});
 })
 
+app.get('/uuid_highscore', function (request, response) {
+	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+		client.query('SELECT uuid, max(score) AS score FROM highscores GROUP BY uuid;', function(err, result) {
+			done();
+			if (err){ 
+				console.error(err); 
+				response.status(500).send("Error " + err);
+			} else { 
+				response.send(result.rows);
+			}
+		});
+	});
+})
+
 app.get('/highscore', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('SELECT highscores.id, highscores.name, merge.score, highscores.timestamp FROM highscores JOIN (SELECT uuid, max(score) AS score FROM highscores GROUP BY uuid ORDER BY score) AS merge ON merge.uuid = highscores.uuid ORDER BY score DESC LIMIT 5;', function(err, result) {
+		client.query('SELECT highscores.id, highscores.name, merge.score, highscores.timestamp, highscores.uuid FROM highscores JOIN (SELECT uuid, max(score) AS score FROM highscores GROUP BY uuid) AS merge ON merge.uuid = highscores.uuid ORDER BY score DESC LIMIT 5;', function(err, result) {
 			done();
 			if (err){ 
 				console.error(err); 
