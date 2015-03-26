@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 
 app.get('/setup_database', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('CREATE TABLE IF NOT EXISTS highscores (id serial PRIMARY KEY NOT NULL, uuid VARCHAR(255) NOT NULL, name VARCHAR (255) NOT NULL, score integer NOT NULL, timestamp TIMESTAMP)', function(err, result) {
+		client.query('CREATE TABLE IF NOT EXISTS highscores (id serial PRIMARY KEY NOT NULL, uuid VARCHAR(255) UNIQUE INDEX NOT NULL, name VARCHAR (255) UNIQUE INDEX NOT NULL, score integer UNIQUE INDEX NOT NULL, timestamp TIMESTAMP)', function(err, result) {
 			done();
 			if (err){ 
 				console.error(err); response.send("Error " + err);
@@ -86,7 +86,7 @@ app.get('/uuid_highscore', function (request, response) {
 
 app.get('/highscore', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('SELECT highscores.id, highscores.name, merge.score, highscores.timestamp, DISTINCT highscores.uuid FROM highscores JOIN (SELECT uuid, max(score) AS score FROM highscores GROUP BY uuid) AS merge ON merge.uuid = highscores.uuid ORDER BY score DESC LIMIT 5;', function(err, result) {
+		client.query('SELECT * FROM highscores ORDER BY score DESC LIMIT 5;', function(err, result) {
 			done();
 			if (err){ 
 				console.error(err); 
@@ -100,13 +100,27 @@ app.get('/highscore', function (request, response) {
 
 app.post('/highscore', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('INSERT INTO highscores (uuid, name, score, timestamp) VALUES($1, $2, $3, $4) RETURNING *;', [request.body.uuid, request.body.name, request.body.score, new Date()], function(err, result) {
-			done();
-			if (err){ 
-				console.error(err); 
-				response.status(500).send("Error " + err);
+		client.query('SELECT id FROM highscores WHERE uuid = $1 AND name = $2;', [request.body.uuid, request.body.name], function(err, result) {
+			if(!result.rows) {
+				client.query('INSERT INTO highscores (uuid, name, score, timestamp) VALUES($1, $2, $3, $4) RETURNING *;', [request.body.uuid, request.body.name, request.body.score, new Date()], function(err, result) {
+					done();
+					if (err){ 
+						console.error(err); 
+						response.status(500).send("Error " + err);
+					} else {
+						response.send(result.rows[0]);
+					}
+				});
 			} else {
-				response.send(result.rows[0]);
+				client.query('UPDATE highscores SET score = $1, timestamp = $2 WHERE id = $3 AND uuid = $4 RETURNING *;', [request.body.score, new Date(), result.rows[0].id, result.body.uuid], function(err, result) {
+					done();
+					if (err){ 
+						console.error(err); 
+						response.status(500).send("Error " + err);
+					} else {
+						response.send(result.rows[0]);
+					}
+				});
 			}
 		});
 	});
