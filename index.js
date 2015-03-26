@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 
 app.get('/setup_database', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-		client.query('CREATE TABLE IF NOT EXISTS highscores (id serial PRIMARY KEY NOT NULL, uuid VARCHAR(255) KEY NOT NULL, name VARCHAR (255) NOT NULL, score integer NOT NULL, timestamp TIMESTAMP)', function(err, result) {
+		client.query('CREATE TABLE IF NOT EXISTS highscores (id serial PRIMARY KEY NOT NULL, uuid VARCHAR(255) NOT NULL, name VARCHAR (255) NOT NULL, score integer NOT NULL, timestamp TIMESTAMP)', function(err, result) {
 			done();
 			if (err){ 
 				console.error(err); response.send("Error " + err);
