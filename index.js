@@ -102,7 +102,7 @@ app.post('/highscore', function (request, response) {
 	pg.connect(process.env.DATABASE_URL, function(err, client, done) {
 		client.query('SELECT id FROM highscores WHERE uuid = $1 AND name = $2;', [request.body.uuid, request.body.name], function(err, result) {
 			if(typeof result.rows !== 'undefined' && result.rows.length > 0) {
-				client.query('UPDATE highscores SET score = $1, timestamp = $2 WHERE id = $3 AND uuid = $4 RETURNING *;', [request.body.score, new Date(), result.rows[0].id, result.body.uuid], function(err, result) {
+				client.query('UPDATE highscores SET score = $1, timestamp = $2 WHERE id = $3 AND uuid = $4 RETURNING *;', [request.body.score, new Date(), result.rows[0].id, request.body.uuid], function(err, result) {
 					done();
 					if (err){ 
 						console.error(err); 
